@@ -1,0 +1,42 @@
+version: '2'
+services:
+  localstack:
+    image: localstack/localstack:0.11.1
+    privileged: true
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      - SERVICES=dynamodb,es
+      - PORT_WEB_UI=8080
+      - AWS_ACCESS_KEY_ID=dev
+      - AWS_SECRET_ACCESS_KEY=dev
+      - AWS_DEFAULT_REGION=us-west-2
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    #      volumes could be removed if we want to keep env clean (but without them start up time will dramatically increase)
+    volumes:
+      - "/tmp/localstack:/tmp/localstack"
+  setup-resources:
+    image: mikesir87/aws-cli:latest
+    network_mode: host
+    volumes:
+      - "./docker-conf:/project/dev_env"
+    environment:
+      - AWS_ACCESS_KEY_ID=dev
+      - AWS_SECRET_ACCESS_KEY=dev
+      - AWS_DEFAULT_REGION=us-west-2
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        sleep 10;
+        apt-get update && apt-get install -y curl
+        aws --endpoint-url="http://localhost:4566" dynamodb create-table --table-name submissions --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
+        aws --endpoint-url="http://localhost:4566" es create-elasticsearch-domain --domain-name submissions
+        curl -X PUT "http://localhost:4571/submissions/_mapping?pretty" -H 'Content-Type: application/json' -d '{ "properties": { "id": {"type": "text","fielddata": true}}}'
+        curl -X PUT "http://localhost:4571/submissions/_mapping?pretty" -H 'Content-Type: application/json' -d '{ "properties": { "text": {"type": "text","fielddata": true}}}'
+        curl -X PUT "http://localhost:4571/submissions/_mapping?pretty" -H 'Content-Type: application/json' -d '{ "properties": { "type": {"type": "text","fielddata": true}}}'
+
+        echo done
+      "
+    depends_on:
+      - localstack

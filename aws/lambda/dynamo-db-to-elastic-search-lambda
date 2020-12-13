@@ -1,0 +1,32 @@
+const axios = require('axios');
+const host = 'host name should be inserted here';
+const index = 'submissions';
+const type = '_doc';
+const url = `${host}/${index}/${type}/`;
+const headers = { "Content-Type": "application/json" }
+exports.handler = async (event, context) => {
+    let count = 0;
+    console.log("Number of records found:" + event.Records.length);
+    for (const record of event.Records) {
+        const id = record.dynamodb.Keys.id.S;
+        console.log("ID of the record: " + id);
+if (record.eventName == 'REMOVE') {
+            await axios.delete(url + id);
+            return 'Item removed'
+        }
+        else {
+            console.log("Record:" + JSON. stringify(record));
+            const document = record.dynamodb.NewImage;
+            console.log('Adding document');
+            console.log(document)
+            const submission = {
+                id: document.id.S,
+                text: document.text.S,
+                type: document.type.S
+            };
+            await axios.put(url + id, submission)
+        }
+        count += 1;
+    }
+    return `Successfully processed ${count} records.`;
+};
