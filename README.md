@@ -72,5 +72,6 @@ The app is using Google re-captcha v3, please use Google documentation to genera
 ```
 google.recaptcha.key.site=<site key>
 google.recaptcha.key.secret=<secret key>
+google.recaptcha.key.enabled=true
 ```
  
