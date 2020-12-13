@@ -32,7 +32,7 @@ Use `local` (by adding the following argument to a maven command `-Dspring.profi
 ### Backend
 - Run `lifecube.LifeCubeApplication` application using `local` Spring profile (`-Dspring.profiles.active=local`)
 
-## Building and running (in QA)
+## Building and running (in production)
 - Run `./mvnw clean install` in a root directory. This will build `frontend` module first and then `backend`. 
 During the `install` step the `frontend` app is being build into `target/dist` folder (which is a production ready bundle containing all the frontend-related files). 
 Then the content of `/frontend/target/dist` folder will be copied into `/backend/src/main/resources/public` directory. 
@@ -49,12 +49,8 @@ Then:
 3. after that in a root project directory run `./mvnw clean install -Dskip.npm=true`
 
 - Run `docker build -t <put-image-name-here> .`
-- Run `docker run -e SPRING_PROFILES_ACTIVE=qa -p 8080:8080 --rm <put-image-name-here>:latest` to verify that the app works.
-- Deploy it into a QA (for example using AWS ECS)
-
-## Building and running (in production)
-The same as for a QA but Spring active profile should be set to `prod` when running the app:
 - Run `docker run -e SPRING_PROFILES_ACTIVE=prod -p 8080:8080 --rm <put-image-name-here>:latest` to verify that the app works.
+- Deploy it into AWS (for example using AWS ECS)
 
 ## Infrastructure (deploying to AWS)
 ### AWS Lambda
